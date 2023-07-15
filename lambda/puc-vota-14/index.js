@@ -71,10 +71,21 @@ exports.handler = async (event) => {
 				const opcao = body.opcao;
 
 				if (votacaoListeners[votacaoId]) {
-					const votacaoBody = { votacao: votacaoId, opcao: opcao };
 					await sendMessage(votacaoListeners[votacaoId], {
 						action: "vote",
-						message: votacaoBody,
+						message: {
+							votacao: votacaoId,
+							opcao: opcao,
+							plus: "blablabla",
+						},
+					});
+					console.log({
+						action: "vote",
+						message: {
+							votacao: votacaoId,
+							opcao: opcao,
+							plus: "blablabla",
+						},
 					});
 				}
 				break;

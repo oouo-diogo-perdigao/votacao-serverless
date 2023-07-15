@@ -2,7 +2,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import ListaVotacoes from "./ListaVotacoes";
-import Votacao from "./Votacao";
+import { Votacao } from "./Votacao";
 import NovaVotacao from "./NovaVotacao";
 import "./App.scss";
 

@@ -1,9 +1,11 @@
 import React, { Component } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { FiHome } from "react-icons/fi";
+import PropTypes from "prop-types";
+import { withRouter } from "./config/withRouter";
 import "./Votacao.scss";
 
-class Votacao extends Component {
+class VotacaoComponent extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -15,6 +17,8 @@ class Votacao extends Component {
 
 	componentDidMount() {
 		const { id } = this.props;
+		console.log("id", id);
+
 		console.log("Abrindo conexão com o websocket");
 
 		// Abrir a conexão do websocket
@@ -78,6 +82,8 @@ class Votacao extends Component {
 			newVotacao.status = true;
 			this.setState({ votacao: newVotacao });
 
+			console.log(id);
+
 			// Enviar comando para o websocket com o id da votação e a opção votada
 			const payload = JSON.stringify({
 				action: "sendVote",
@@ -106,7 +112,7 @@ class Votacao extends Component {
 						<h1>{votacao.nome}</h1>
 						<p>
 							{votacao.status ? "Já Votado" : ""}{" "}
-							{voto && <p>Você votou em: {voto}</p>}
+							{voto && <>Você votou em: {voto}</>}
 						</p>
 						<Link to="/" className="btn-home">
 							<FiHome />
@@ -139,4 +145,16 @@ class Votacao extends Component {
 	}
 }
 
-export default Votacao;
+VotacaoComponent.propTypes = {
+	id: PropTypes.number.isRequired,
+};
+
+/**
+ * Classe da tela do componente de chat
+ * @class RoomComponent
+ * @param {*} props
+ * @return {Component}
+ */
+export const Votacao = withRouter((props) => {
+	return <VotacaoComponent id={parseInt(props.router.params.id)} />;
+});

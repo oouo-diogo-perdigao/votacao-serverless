@@ -1,0 +1,29 @@
+.Votacao {
+	/* Arquivo: Votacao.css */
+	.btn-home {
+		position: fixed;
+		top: 20px;
+		right: 20px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+		background-color: #005cbf;
+		color: #fff;
+		font-size: 20px;
+		text-decoration: none;
+	}
+	.votacao-opcoes {
+		//centraliza
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+	}
+	.votada {
+		background-color: #005cbf;
+		color: #fff;
+	}
+}

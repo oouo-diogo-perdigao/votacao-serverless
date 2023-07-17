@@ -5,7 +5,7 @@ Alunos:
 * Juliano Caetano
 
 
-Url publica: http://puc-votacao.s3-website-sa-east-1.amazonaws.com/
+Url publica: https://d118x8uh80u26v.cloudfront.net/
 
 
 
@@ -51,6 +51,7 @@ A aplicação é um sistema simples de votação que registra os dados em um dyn
 graph LR
 
 subgraph "Frontend"
+	CloudFront --> SWH[Static website hosting]
 	SWH[Static website hosting] --> s3((S3 React))
 	
 end

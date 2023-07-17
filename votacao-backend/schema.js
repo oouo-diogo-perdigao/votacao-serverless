@@ -1,4 +1,4 @@
-import { buildSchema } from 'graphql';
+import { buildSchema } from "graphql";
 
 const typeDefs = buildSchema(`
   type Enquete {
@@ -49,6 +49,7 @@ const typeDefs = buildSchema(`
     votosEnquetes: [EnqueteVoto]    
     votosEnquetesAux: [EnqueteVotoAux]    
     votosPorEnquete(nomeEnquete: String!): [EnqueteVoto]
+		votosPorEnqueteAux(id: String!): [EnqueteVotoAux]
   }
 
   type Mutation {

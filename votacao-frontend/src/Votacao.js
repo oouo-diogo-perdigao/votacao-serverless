@@ -115,6 +115,28 @@ class VotacaoComponent extends Component {
 			});
 			socket?.send(payload);
 			console.log("Voto computado:", payload);
+
+
+			const response = await axios.post(
+				"https://htbplunnk3vj53gpjtvxvyhbu40myfwm.lambda-url.us-east-1.on.aws/",
+				{
+					query: `mutation Mutation($nomeEnquete: String!, $opcao: String!, $votarEnqueteAuxId: String) {
+  votarEnqueteAux(nomeEnquete: $nomeEnquete, opcao: $opcao, id: $votarEnqueteAuxId) {
+    contador
+    opcao
+  }
+}
+
+{
+  "nomeEnquete": "Votacao 112",
+  "opcao": "Opção 2"
+}
+`,
+					variables: { enqueteItensPorIdAuxId: String(id) },
+				}
+			);
+
+
 		}
 	};
 

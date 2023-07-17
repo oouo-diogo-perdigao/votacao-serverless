@@ -5,7 +5,6 @@ import "./ListaVotacoes.scss";
 import { FiPlus } from "react-icons/fi";
 import axios from "axios";
 
-
 const ListaVotacoes = () => {
 	const [votacoes, setVotacoes] = useState([]);
 

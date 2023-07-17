@@ -1,0 +1,82 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+
+Resources:
+  VotacaoServerlessFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: votacao-serverless
+      Runtime: nodejs14.x
+      Handler: index.handler
+      CodeUri: .
+      MemorySize: 128
+      Timeout: 30
+      Environment:
+        Variables:
+          ENQUETE_TABLE_NAME: !Ref EnqueteTable
+          ENQUETE_ITEM_TABLE_NAME: !Ref EnqueteItemTable
+          ENQUETE_VOTO_TABLE_NAME: !Ref EnqueteVotoTable
+
+  EnqueteTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: Enquete
+      AttributeDefinitions:
+        - AttributeName: nome
+          AttributeType: S
+      KeySchema:
+        - AttributeName: nome
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  EnqueteItemTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: EnqueteItem
+      AttributeDefinitions:
+        - AttributeName: nomeEnquete
+          AttributeType: S
+        - AttributeName: opcao
+          AttributeType: S
+      KeySchema:
+        - AttributeName: nomeEnquete
+          KeyType: HASH
+        - AttributeName: opcao
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  EnqueteVotoTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: EnqueteVoto
+      AttributeDefinitions:
+        - AttributeName: nomeEnquete
+          AttributeType: S
+        - AttributeName: opcao
+          AttributeType: S
+      KeySchema:
+        - AttributeName: nomeEnquete
+          KeyType: HASH
+        - AttributeName: opcao
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  VotacaoApi:
+    Type: 'AWS::Serverless::HttpApi'
+    Properties:
+      StageName: Prod
+      CorsConfiguration:
+        AllowMethods: "'OPTIONS,POST'"
+        AllowHeaders: "'Content-Type'"
+        AllowOrigins: "'*'"
+
+Outputs:
+  VotacaoApiEndpoint:
+    Description: Endpoint de acesso à API de votação
+    Value: !Sub 'https://${VotacaoApi}.execute-api.${AWS::Region}.amazonaws.com/Prod'

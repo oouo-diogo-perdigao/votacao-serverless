@@ -1,5 +1,7 @@
 # Sistema de votação ao vivo para enquetes
 
+[Link do Video apresentando o sistema](https://youtu.be/zoEC-bZIp8A)
+
 Alunos:
 * Diogo Passos Perdigão Britto
 * Juliano Caetano
@@ -200,4 +202,4 @@ Registra um voto em uma votação específica.
 
 8. Após as apresentações, os grupos devem ter a oportunidade de fazer perguntas e discutir as diferentes abordagens utilizadas na documentação.
 
-Link do Video apresentando o sistema:
+[Link do Video apresentando o sistema](https://youtu.be/zoEC-bZIp8A)

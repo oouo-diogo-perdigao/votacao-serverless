@@ -1,6 +1,12 @@
-url publica
+# Sistema de votação ao vivo para enquetes
 
-http://puc-votacao.s3-website-sa-east-1.amazonaws.com/
+Alunos:
+* Diogo Passos Perdigão Britto
+* Juliano Caetano
+
+
+Url publica: http://puc-votacao.s3-website-sa-east-1.amazonaws.com/
+
 
 
 Objetivo: Os alunos devem trabalhar em grupos de três para documentar uma aplicação desenvolvida com as tecnologias Serverless, GraphQL e WebSockets. A atividade envolve a criação de documentação usando diferentes abordagens, como Swagger para a API, uma visão geral da arquitetura, um diagrama de componentes e uma seção de boas práticas.

@@ -1,42 +1,48 @@
 // Arquivo: src/ListaVotacoes.js
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import NovaVotacao from "./NovaVotacao";
 import "./ListaVotacoes.scss";
 import { FiPlus } from "react-icons/fi";
+import axios from "axios";
+
 
 const ListaVotacoes = () => {
 	const [votacoes, setVotacoes] = useState([]);
 
 	useEffect(() => {
-		// Obter a lista de votações do backend (mock de exemplo)
-		const votacoesMock = [
-			{
-				nome: "Qual a cor favorita",
-				url: "/175812284",
-			},
-			{
-				nome: "Qual o time de futebol favorito",
-				url: "/175812285",
-			},
-		];
-		setVotacoes(votacoesMock);
+		const fetchData = async () => {
+			try {
+			  const response = await axios.post("https://htbplunnk3vj53gpjtvxvyhbu40myfwm.lambda-url.us-east-1.on.aws/", {			  
+				query: `
+					query Query {
+						enquetesAux {
+							nomeEnquete,
+							id
+						}
+					}		
+				`,
+			  });
 
-		// Código do fetch comentado
-		// fetch("/api/enquetes")
-		//   .then((response) => response.json())
-		//   .then((data) => setVotacoes(data))
-		//   .catch((error) => console.log("Ocorreu um erro ao obter as votações:", error));
-	}, []);
+			  const { enquetesAux } = response.data.data;
+			  enquetesAux.forEach((enquete) => handleNovaVotacao(enquete.nomeEnquete, enquete.id));
+			  
+			} catch (error) {
+			  console.log("Ocorreu um erro ao obter as enquetes:", error);
+			}
+		  };
+	  
+		  fetchData();
+	}, []);		  
 
-	const handleNovaVotacao = (nomeVotacao) => {
+	const handleNovaVotacao = (nomeVotacao, id) => {
 		// Lógica para criar a nova votação no backend e atualizar a lista de votações
 		const novaVotacao = {
 			nome: nomeVotacao,
-			url: `/${Math.floor(Math.random() * 100000000)}`, // Exemplo de URL gerada aleatoriamente
+			url: `/${id}`,
+			//url: `/${Math.floor(Math.random() * 100000000)}`, // Exemplo de URL gerada aleatoriamente
 		};
 
-		setVotacoes([...votacoes, novaVotacao]);
+		setVotacoes((prevVotacoes) => [...prevVotacoes, novaVotacao]);
 	};
 
 	return (

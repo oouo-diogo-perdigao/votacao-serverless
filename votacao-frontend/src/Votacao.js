@@ -1,8 +1,9 @@
 import React, { Component } from "react";
-import { useNavigate, useParams, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { FiHome } from "react-icons/fi";
 import PropTypes from "prop-types";
 import { withRouter } from "./config/withRouter";
+import axios from "axios";
 import "./Votacao.scss";
 
 class VotacaoComponent extends Component {
@@ -47,30 +48,62 @@ class VotacaoComponent extends Component {
 			});
 		});
 
-		// Mock da chamada GET /api/enquete/:id
-		const mockVotacao = {
-			nome: "Qual a cor favorita",
-			opcoes: {
-				Azul: 0,
-				Amarelo: 0,
-				Verde: 0,
-			},
-			status: false,
-		};
+		const fetchData = async () => {
+			try {
+				
+			  const response = await axios.post("https://htbplunnk3vj53gpjtvxvyhbu40myfwm.lambda-url.us-east-1.on.aws/", {			
+				query: `
+				query Query($enqueteItensPorIdAuxId: String!) {
+					enqueteItensPorIdAux(id: $enqueteItensPorIdAuxId) {
+					  nomeEnquete
+					  opcao
+					  id
+					}
+				  }
+				`,
+				variables: { enqueteItensPorIdAuxId: "${id}" }, 
+			  });
 
-		// Simulando o tempo de espera da chamada
-		const delay = setTimeout(() => {
-			this.setState({ votacao: mockVotacao });
-		}, 1000);
+			  
+			  const { enqueteItensPorIdAux } = response.data.data.enqueteItensPorIdAux;
+			  const opcoes = enqueteItensPorIdAux.map((item) => item.opcao);
 
-		// Limpando o timeout para evitar vazamentos de memória
-		// Código do fetch comentado
-		// fetch(`/api/enquete/${id}`)
-		//   .then((response) => response.json())
-		//   .then((data) => setVotacao(data))
-		//   .catch((error) => console.log("Ocorreu um erro ao obter a votação:", error));
-	}
+			  const mockVotacao = {
+				nome: enqueteItensPorIdAux[0].nomeEnquete,
+				opcoes: opcoes,
 
+				/*opcoes: opcoes.reduce((acc, opcao) => {
+					acc[opcao] = 0;
+					return acc;
+				  }, {}),*/
+				status: false,
+			  };
+			  this.setState({ votacao: mockVotacao });
+			  /*
+			  const mockVotacao = {
+				nome: "Qual a cor favorita",
+				opcoes: {
+					Azul: 0,
+					Amarelo: 0,
+					Verde: 0,
+				},
+				status: false,
+			};
+	
+			// Simulando o tempo de espera da chamada
+			const delay = setTimeout(() => {
+				this.setState({ votacao: mockVotacao });
+			}, 1000);
+			*/
+			} catch (error) {
+			  console.log("Ocorreu um erro ao obter a votação:", error);
+			}
+		  };
+	  
+		  fetchData();
+		}
+	  
+	  
 	handleVoto = (opcao) => {
 		const { id } = this.props;
 		const { socket, votacao, voto } = this.state;

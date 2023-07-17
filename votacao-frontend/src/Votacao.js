@@ -18,6 +18,14 @@ class VotacaoComponent extends Component {
 
 	componentDidMount() {
 		const { id } = this.props;
+		//pega do localstorage um array com as votações que o usuário já votou
+		const votacoesJaVotadas = JSON.parse(
+			localStorage.getItem("votacoesJaVotadas") ?? "[]"
+		);
+		//Se o usuário já votou nessa votação, considera que o voto já foi computado
+		if (votacoesJaVotadas.includes(id)) {
+			this.setState({ voto: "Voto já computado" });
+		}
 
 		console.log("Abrindo conexão com o websocket");
 
@@ -47,24 +55,21 @@ class VotacaoComponent extends Component {
 			});
 		});
 
-		const fetchData = async () => {
-			try {
-				const response = await axios.post(
-					"https://htbplunnk3vj53gpjtvxvyhbu40myfwm.lambda-url.us-east-1.on.aws/",
-					{
-						query: `query Query($enqueteItensPorIdAuxId: String!) {
+		axios
+			.post(
+				"https://htbplunnk3vj53gpjtvxvyhbu40myfwm.lambda-url.us-east-1.on.aws/",
+				{
+					query: `query Query($enqueteItensPorIdAuxId: String!) {
 								enqueteItensPorIdAux(id: $enqueteItensPorIdAuxId) {
 									nomeEnquete
 									opcao
 									id
 								}
 							}`,
-						variables: { enqueteItensPorIdAuxId: String(id) },
-					}
-				);
-
-				console.log(response);
-
+					variables: { enqueteItensPorIdAuxId: String(id) },
+				}
+			)
+			.then((response) => {
 				const opcoesNomes =
 					response?.data?.data?.enqueteItensPorIdAux?.map(
 						(item) => item.opcao
@@ -86,12 +91,36 @@ class VotacaoComponent extends Component {
 						opcoes,
 					},
 				});
-			} catch (error) {
-				console.log("Ocorreu um erro ao obter a votação:", error);
-			}
-		};
 
-		fetchData();
+				// Pega os votos que ja foram computados nessa enquete e guarda no state
+				axios
+					.post(
+						"https://htbplunnk3vj53gpjtvxvyhbu40myfwm.lambda-url.us-east-1.on.aws/",
+						{
+							query: `query Query($votosPorEnqueteAuxId: String!) {
+							votosPorEnqueteAux(id: $votosPorEnqueteAuxId) {
+								contador
+								opcao
+							}
+						}`,
+							variables: { votosPorEnqueteAuxId: String(id) },
+						}
+					)
+					.then((response) => {
+						//converter array de votos em objeto com chave sendo nome e votos sendo contador
+						const votos = {};
+						response?.data?.data?.votosPorEnqueteAux?.forEach((voto) => {
+							votos[voto.opcao] = voto.contador;
+						});
+						const { votacao } = this.state;
+						const newVotacao = { ...votacao };
+						newVotacao.opcoes = votos;
+						this.setState({ votacao: newVotacao });
+					});
+			})
+			.catch((error) => {
+				console.log("Ocorreu um erro ao obter a votação:", error);
+			});
 	}
 
 	handleVoto = (opcao) => {
@@ -100,12 +129,6 @@ class VotacaoComponent extends Component {
 
 		if (!voto) {
 			this.setState({ voto: opcao });
-
-			const newVotacao = { ...votacao };
-			newVotacao.status = true;
-			this.setState({ votacao: newVotacao });
-
-			console.log(id);
 
 			// Enviar comando para o websocket com o id da votação e a opção votada
 			const payload = JSON.stringify({
@@ -116,27 +139,36 @@ class VotacaoComponent extends Component {
 			socket?.send(payload);
 			console.log("Voto computado:", payload);
 
+			const response = axios
+				.post(
+					"https://htbplunnk3vj53gpjtvxvyhbu40myfwm.lambda-url.us-east-1.on.aws/",
+					{
+						query: `mutation {
+						votarEnqueteAux(nomeEnquete: "${votacao.nome}", opcao: "${opcao}", id: "${id}") {
+								contador
+								opcao
+							}
+					  }`,
+					}
+				)
+				.then((response) => {
+					const { contador, opcao } = response.data.data.votarEnqueteAux;
 
-			const response = await axios.post(
-				"https://htbplunnk3vj53gpjtvxvyhbu40myfwm.lambda-url.us-east-1.on.aws/",
-				{
-					query: `mutation Mutation($nomeEnquete: String!, $opcao: String!, $votarEnqueteAuxId: String) {
-  votarEnqueteAux(nomeEnquete: $nomeEnquete, opcao: $opcao, id: $votarEnqueteAuxId) {
-    contador
-    opcao
-  }
-}
+					const newVotacao = { ...votacao };
+					newVotacao.opcoes[opcao] = contador;
+					newVotacao.status = true;
+					this.setState({ votacao: newVotacao });
 
-{
-  "nomeEnquete": "Votacao 112",
-  "opcao": "Opção 2"
-}
-`,
-					variables: { enqueteItensPorIdAuxId: String(id) },
-				}
-			);
-
-
+					//Guarda no localstorage um array com as votações que o usuário já votou
+					const votacoesJaVotadas = JSON.parse(
+						localStorage.getItem("votacoesJaVotadas") ?? "[]"
+					);
+					votacoesJaVotadas.push(id);
+					localStorage.setItem(
+						"votacoesJaVotadas",
+						JSON.stringify(votacoesJaVotadas)
+					);
+				});
 		}
 	};
 

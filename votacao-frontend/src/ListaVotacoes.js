@@ -11,27 +11,31 @@ const ListaVotacoes = () => {
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
-			  const response = await axios.post("https://htbplunnk3vj53gpjtvxvyhbu40myfwm.lambda-url.us-east-1.on.aws/", {			  
-				query: `
+				const response = await axios.post(
+					"https://htbplunnk3vj53gpjtvxvyhbu40myfwm.lambda-url.us-east-1.on.aws/",
+					{
+						query: `
 					query Query {
 						enquetesAux {
 							nomeEnquete,
 							id
 						}
-					}		
+					}
 				`,
-			  });
+					}
+				);
 
-			  const { enquetesAux } = response.data.data;
-			  enquetesAux.forEach((enquete) => handleNovaVotacao(enquete.nomeEnquete, enquete.id));
-			  
+				const { enquetesAux } = response.data.data;
+				enquetesAux.forEach((enquete) =>
+					handleNovaVotacao(enquete.nomeEnquete, enquete.id)
+				);
 			} catch (error) {
-			  console.log("Ocorreu um erro ao obter as enquetes:", error);
+				console.log("Ocorreu um erro ao obter as enquetes:", error);
 			}
-		  };
-	  
-		  fetchData();
-	}, []);		  
+		};
+
+		fetchData();
+	}, []);
 
 	const handleNovaVotacao = (nomeVotacao, id) => {
 		// Lógica para criar a nova votação no backend e atualizar a lista de votações

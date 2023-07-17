@@ -18,7 +18,6 @@ class VotacaoComponent extends Component {
 
 	componentDidMount() {
 		const { id } = this.props;
-		console.log("id", id);
 
 		console.log("Abrindo conexão com o websocket");
 
@@ -50,60 +49,51 @@ class VotacaoComponent extends Component {
 
 		const fetchData = async () => {
 			try {
-				
-			  const response = await axios.post("https://htbplunnk3vj53gpjtvxvyhbu40myfwm.lambda-url.us-east-1.on.aws/", {			
-				query: `
-				query Query($enqueteItensPorIdAuxId: String!) {
-					enqueteItensPorIdAux(id: $enqueteItensPorIdAuxId) {
-					  nomeEnquete
-					  opcao
-					  id
+				const response = await axios.post(
+					"https://htbplunnk3vj53gpjtvxvyhbu40myfwm.lambda-url.us-east-1.on.aws/",
+					{
+						query: `query Query($enqueteItensPorIdAuxId: String!) {
+								enqueteItensPorIdAux(id: $enqueteItensPorIdAuxId) {
+									nomeEnquete
+									opcao
+									id
+								}
+							}`,
+						variables: { enqueteItensPorIdAuxId: String(id) },
 					}
-				  }
-				`,
-				variables: { enqueteItensPorIdAuxId: "${id}" }, 
-			  });
+				);
 
-			  
-			  const { enqueteItensPorIdAux } = response.data.data.enqueteItensPorIdAux;
-			  const opcoes = enqueteItensPorIdAux.map((item) => item.opcao);
+				console.log(response);
 
-			  const mockVotacao = {
-				nome: enqueteItensPorIdAux[0].nomeEnquete,
-				opcoes: opcoes,
+				const opcoesNomes =
+					response?.data?.data?.enqueteItensPorIdAux?.map(
+						(item) => item.opcao
+					) ?? null;
 
-				/*opcoes: opcoes.reduce((acc, opcao) => {
-					acc[opcao] = 0;
-					return acc;
-				  }, {}),*/
-				status: false,
-			  };
-			  this.setState({ votacao: mockVotacao });
-			  /*
-			  const mockVotacao = {
-				nome: "Qual a cor favorita",
-				opcoes: {
-					Azul: 0,
-					Amarelo: 0,
-					Verde: 0,
-				},
-				status: false,
-			};
-	
-			// Simulando o tempo de espera da chamada
-			const delay = setTimeout(() => {
-				this.setState({ votacao: mockVotacao });
-			}, 1000);
-			*/
+				const nome =
+					response?.data?.data?.enqueteItensPorIdAux[0].nomeEnquete ??
+					"Votação Encerrada";
+
+				//Converte array de opções em objeto com chave sendo nome e votos sendo 0
+				const opcoes = {};
+				opcoesNomes?.forEach((opcao) => {
+					opcoes[opcao] = 0;
+				});
+
+				this.setState({
+					votacao: {
+						nome,
+						opcoes,
+					},
+				});
 			} catch (error) {
-			  console.log("Ocorreu um erro ao obter a votação:", error);
+				console.log("Ocorreu um erro ao obter a votação:", error);
 			}
-		  };
-	  
-		  fetchData();
-		}
-	  
-	  
+		};
+
+		fetchData();
+	}
+
 	handleVoto = (opcao) => {
 		const { id } = this.props;
 		const { socket, votacao, voto } = this.state;

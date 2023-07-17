@@ -6,10 +6,9 @@ import { FiMinus, FiPlus, FiHome } from "react-icons/fi";
 
 const NovaVotacao = () => {
 	const [titulo, setTitulo] = useState("");
-	const [opcoes, setOpcoes] = useState([""]);
+	const [opcoes, setOpcoes] = useState(["Opção 1", "Opção 2"]);
 	const [loading, setLoading] = useState(false);
-	const [votacaoUrl, setVotacaoUrl] = useState(null);
-	const [novaOpcao, setNovaOpcao] = useState("");
+	const [votacaoUrl, setVotacaoUrl] = useState(false);
 
 	const handleTituloChange = (event) => {
 		setTitulo(event.target.value);
@@ -22,10 +21,7 @@ const NovaVotacao = () => {
 	};
 
 	const handleAdicionarOpcao = () => {
-		if (novaOpcao.trim() !== "") {
-			setOpcoes([...opcoes, novaOpcao]);
-			setNovaOpcao("");
-		}
+		setOpcoes([...opcoes, ""]);
 	};
 
 	const handleRemoverOpcao = (index) => {
@@ -38,44 +34,45 @@ const NovaVotacao = () => {
 		setLoading(true);
 
 		try {
-			const response = await axios.post("https://htbplunnk3vj53gpjtvxvyhbu40myfwm.lambda-url.us-east-1.on.aws/", {
-				query: `
-				  mutation {
-					criarEnqueteAux(nomeEnquete: "${titulo}") {
-					  nomeEnquete
-					  id
-					}
-				  }
-				`,
-			  });
+			const response = await axios.post(
+				"https://htbplunnk3vj53gpjtvxvyhbu40myfwm.lambda-url.us-east-1.on.aws/",
+				{
+					query: `mutation {
+							criarEnqueteAux(nomeEnquete: "${titulo}") {
+								nomeEnquete
+								id
+							}
+					  }`,
+				}
+			);
 
 			const id = response.data.data.criarEnqueteAux.id;
-			//alert(id);
-			setVotacaoUrl(id);
-			
+
 			for (const opcao of opcoes) {
-				await axios.post("https://htbplunnk3vj53gpjtvxvyhbu40myfwm.lambda-url.us-east-1.on.aws/", {				
-				  query: `
-					mutation {
-					  criarEnqueteItemAux(nomeEnquete: "${titulo}", opcao: "${opcao}", id: "${id}") {						                                                               
-						nomeEnquete
-						opcao
-						id
-					  }
+				await axios.post(
+					"https://htbplunnk3vj53gpjtvxvyhbu40myfwm.lambda-url.us-east-1.on.aws/",
+					{
+						query: `mutation {
+								criarEnqueteItemAux(nomeEnquete: "${titulo}", opcao: "${opcao}", id: "${id}") {
+									nomeEnquete
+									opcao
+									id
+						  	}
+							}`,
 					}
-				  `,
-				});
-			  }
-			  			
+				);
+			}
+
+			setVotacaoUrl(id);
 		} catch (error) {
 			console.log("Ocorreu um erro ao enviar a votação:", error);
 		}
 
-		setLoading(false);
+		// setLoading(false);
 	};
 
 	if (votacaoUrl) {
-		return <Navigate to={votacaoUrl} />;
+		return <Navigate to={"/" + votacaoUrl} />;
 	}
 
 	return (
@@ -88,13 +85,17 @@ const NovaVotacao = () => {
 					<Link to="/" className="btn-home">
 						<FiHome />
 					</Link>
-
-					<input
-						type="text"
-						placeholder="Título da Votação"
-						value={titulo}
-						onChange={handleTituloChange}
-					/>
+					<div className="opcao">
+						<input
+							type="text"
+							placeholder="Título da Votação"
+							value={titulo}
+							onChange={handleTituloChange}
+						/>
+					</div>
+					Opções:
+					<br />
+					<br />
 					{opcoes.map((opcao, index) => (
 						<div className="opcao" key={index}>
 							<input
@@ -103,7 +104,7 @@ const NovaVotacao = () => {
 								value={opcao}
 								onChange={(event) => handleOpcaoChange(index, event)}
 							/>
-							{opcoes.length > 1 && (
+							{opcoes.length > 2 && (
 								<button
 									onClick={() => handleRemoverOpcao(index)}
 									className="botao-remover"
@@ -113,22 +114,9 @@ const NovaVotacao = () => {
 							)}
 						</div>
 					))}
-
-					<div className="opcao">
-						<input
-							type="text"
-							placeholder="Adicionar Opção"
-							value={novaOpcao}
-							onChange={(event) => setNovaOpcao(event.target.value)}
-						/>
-						<button
-							onClick={handleAdicionarOpcao}
-							disabled={!novaOpcao}
-							className="botao-adicionar"
-						>
-							<FiPlus />
-						</button>
-					</div>
+					<button onClick={handleAdicionarOpcao} className="botao-adicionar">
+						<FiPlus />
+					</button>
 					<button onClick={handleNovaVotacao} className="botao-grande">
 						Adicionar Votação
 					</button>

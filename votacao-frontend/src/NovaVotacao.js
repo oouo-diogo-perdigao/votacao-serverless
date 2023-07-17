@@ -38,12 +38,36 @@ const NovaVotacao = () => {
 		setLoading(true);
 
 		try {
-			const response = await axios.post("/api/enquete", {
-				nome: titulo,
-				opcoes: opcoes,
+			//const response = await axios.post("https://htbplunnk3vj53gpjtvxvyhbu40myfwm.lambda-url.us-east-1.on.aws/", {
+			const response = await axios.post("http://localhost:4000/", {
+				query: `
+				  mutation {
+					criarEnqueteAux(nomeEnquete: "${titulo}") {
+					  nomeEnquete
+					  id
+					}
+				  }
+				`,
 			});
-			const { url } = response.data;
-			setVotacaoUrl(url);
+
+			const id = response.data.data.criarEnqueteAux.id;
+			//alert(id);
+			setVotacaoUrl(id);
+
+			for (const opcao of opcoes) {
+				//await axios.post("https://htbplunnk3vj53gpjtvxvyhbu40myfwm.lambda-url.us-east-1.on.aws/", {
+				await axios.post("http://localhost:4000/", {
+					query: `
+					mutation {
+					  criarEnqueteItemAux(nomeEnquete: "${titulo}", opcao: "${opcao}", id: "${id}") {						                                                               
+						nomeEnquete
+						opcao
+						id
+					  }
+					}
+				  `,
+				});
+			}
 		} catch (error) {
 			console.log("Ocorreu um erro ao enviar a votação:", error);
 		}

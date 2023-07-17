@@ -1,9 +1,9 @@
 class EnqueteVoto {
-    constructor(nomeEnquete, opcao) {
-      this.nomeEnquete = nomeEnquete;
-      this.opcao = opcao;
-    }
-  }
-  
-  export { EnqueteVoto };
-  
+	constructor(nomeEnquete, opcao, contador) {
+		this.nomeEnquete = nomeEnquete;
+		this.opcao = opcao;
+		this.contador = contador;
+	}
+}
+
+export { EnqueteVoto };

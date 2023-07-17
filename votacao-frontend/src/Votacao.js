@@ -20,11 +20,11 @@ class VotacaoComponent extends Component {
 		const { id } = this.props;
 		//pega do localstorage um array com as votações que o usuário já votou
 		const votacoesJaVotadas = JSON.parse(
-			localStorage.getItem("votacoesJaVotadas") ?? "[]"
+			localStorage.getItem("votacoesJaVotadas") ?? "{}"
 		);
 		//Se o usuário já votou nessa votação, considera que o voto já foi computado
-		if (votacoesJaVotadas.includes(id)) {
-			this.setState({ voto: "Voto já computado" });
+		if (votacoesJaVotadas[id]) {
+			this.setState({ voto: votacoesJaVotadas[id] });
 		}
 
 		console.log("Abrindo conexão com o websocket");
@@ -80,46 +80,55 @@ class VotacaoComponent extends Component {
 					"Votação Encerrada";
 
 				//Converte array de opções em objeto com chave sendo nome e votos sendo 0
-				const opcoes = {};
+				const { votacao } = this.state;
+				const newVotacao = { ...votacao, nome };
+
+				if (!newVotacao.opcoes) {
+					newVotacao.opcoes = {};
+				}
 				opcoesNomes?.forEach((opcao) => {
-					opcoes[opcao] = 0;
+					if (!newVotacao.opcoes[opcao]) {
+						newVotacao.opcoes[opcao] = 0;
+					}
 				});
 
 				this.setState({
-					votacao: {
-						nome,
-						opcoes,
-					},
+					votacao: newVotacao,
 				});
+			});
 
-				// Pega os votos que ja foram computados nessa enquete e guarda no state
-				axios
-					.post(
-						"https://htbplunnk3vj53gpjtvxvyhbu40myfwm.lambda-url.us-east-1.on.aws/",
-						{
-							query: `query Query($votosPorEnqueteAuxId: String!) {
-							votosPorEnqueteAux(id: $votosPorEnqueteAuxId) {
-								contador
-								opcao
-							}
-						}`,
-							variables: { votosPorEnqueteAuxId: String(id) },
+		// Pega os votos que ja foram computados nessa enquete e guarda no state
+		axios
+			.post(
+				"https://htbplunnk3vj53gpjtvxvyhbu40myfwm.lambda-url.us-east-1.on.aws/",
+				{
+					query: `query Query($votosPorEnqueteAuxId: String!) {
+						votosPorEnqueteAux(id: $votosPorEnqueteAuxId) {
+							contador
+							opcao
 						}
-					)
-					.then((response) => {
-						//converter array de votos em objeto com chave sendo nome e votos sendo contador
-						const votos = {};
-						response?.data?.data?.votosPorEnqueteAux?.forEach((voto) => {
-							votos[voto.opcao] = voto.contador;
-						});
-						const { votacao } = this.state;
-						const newVotacao = { ...votacao };
-						newVotacao.opcoes = votos;
-						this.setState({ votacao: newVotacao });
-					});
-			})
-			.catch((error) => {
-				console.log("Ocorreu um erro ao obter a votação:", error);
+					}`,
+					variables: { votosPorEnqueteAuxId: String(id) },
+				}
+			)
+			.then((response) => {
+				//converter array de votos em objeto com chave sendo nome e votos sendo contador
+				const votos = {};
+				response?.data?.data?.votosPorEnqueteAux?.forEach((voto) => {
+					votos[voto.opcao] = voto.contador;
+				});
+				const { votacao } = this.state;
+				const newVotacao = { ...votacao };
+				if (!newVotacao.opcoes) {
+					newVotacao.opcoes = {};
+				}
+				//percorre votos e soma com os votos que já estavam no state
+				Object.entries(votos).forEach(([opcao, votos]) => {
+					console.log(newVotacao);
+					console.log(opcao, votos);
+					newVotacao.opcoes[opcao] = votos;
+				});
+				this.setState({ votacao: newVotacao });
 			});
 	}
 
@@ -156,14 +165,13 @@ class VotacaoComponent extends Component {
 
 					const newVotacao = { ...votacao };
 					newVotacao.opcoes[opcao] = contador;
-					newVotacao.status = true;
 					this.setState({ votacao: newVotacao });
 
-					//Guarda no localstorage um array com as votações que o usuário já votou
+					//Guarda no localstorage um objeto com as votações que o usuário já votou e a opção votada
 					const votacoesJaVotadas = JSON.parse(
-						localStorage.getItem("votacoesJaVotadas") ?? "[]"
+						localStorage.getItem("votacoesJaVotadas") ?? "{}"
 					);
-					votacoesJaVotadas.push(id);
+					votacoesJaVotadas[id] = opcao;
 					localStorage.setItem(
 						"votacoesJaVotadas",
 						JSON.stringify(votacoesJaVotadas)
@@ -187,10 +195,7 @@ class VotacaoComponent extends Component {
 				{votacao ? (
 					<div>
 						<h1>{votacao.nome}</h1>
-						<p>
-							{votacao.status ? "Já Votado" : ""}{" "}
-							{voto && <>Você votou em: {voto}</>}
-						</p>
+						<p>{voto ? <>Você votou em: {voto}</> : ""}</p>
 						<Link to="/" className="btn-home">
 							<FiHome />
 						</Link>
@@ -204,7 +209,7 @@ class VotacaoComponent extends Component {
 										onClick={() => this.handleVoto(opcao)}
 									>
 										{opcao}{" "}
-										{votacao.status ? (
+										{voto ? (
 											<span className="votos-indicador">({votos})</span>
 										) : null}
 									</li>

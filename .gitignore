@@ -1,0 +1,8 @@
+node_modules
+template.yml
+../.env
+votacao-backend/.aws-sam
+votacao-backend/votacao_servless.zip
+votacao-backend/votacao-backend.zip
+votacao-frontend/votacao-frontend.zip
+.env

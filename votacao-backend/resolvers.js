@@ -7,10 +7,10 @@ import AWS from "aws-sdk";
 import { DynamoDB } from "@aws-sdk/client-dynamodb";
 
 AWS.config.update({
-	region: "us-east-1",
-	endpoint: "http://dynamodb.us-east-1.amazonaws.com",
-	acessKeyId: "AKIA2XDUIYKYUZ4VP3LX",
-	secretAcessKey: "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",
+	"region" : "us-east-1",
+	"endpoint":"http://dynamodb.us-east-1.amazonaws.com",
+	"acessKeyId":process.env.acessKeyId,
+	"secretAcessKey":process.env.secretAcessKey	
 });
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
